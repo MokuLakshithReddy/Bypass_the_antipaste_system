@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuperPaste - Anti-Paste Defense Test Lab</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      padding: 30px 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* Clipboard Copy Bar */
+    .clipboard-bar {
+      background: linear-gradient(90deg, #1e1b4b, #312e81);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .clipboard-bar-text {
+      font-size: 13.5px;
+    }
+
+    .copy-btn {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    /* Test Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .test-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pill-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .pill-warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .card-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      background-color: #0d1322;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 13.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus, textarea:focus, .editable-box:focus {
+      border-color: var(--accent);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 75px;
+    }
+
+    .editable-box {
+      background-color: #0d1322;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-height: 75px;
+      outline: none;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .counter-badge {
+      font-weight: 700;
+      color: var(--danger);
+    }
+
+    .counter-badge.zero {
+      color: var(--success);
+    }
+
+    .locked-text-box {
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      background-color: #0d1322;
+      border: 1px dashed rgba(239, 68, 68, 0.4);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    /* Live Event Log */
+    .log-section {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .log-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .btn-clear {
+      background: none;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .log-box {
+      height: 120px;
+      background-color: #080c14;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11.5px;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 4px;
+    }
+
+    .log-entry {
+      color: #94a3b8;
+    }
+
+    .log-entry.blocked {
+      color: #ef4444;
+    }
+
+    .log-entry.success {
+      color: #10b981;
+    }
+
+    .instructions-card {
+      margin-top: 24px;
+      padding: 16px 20px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    .instructions-card h3 {
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #a5b4fc;
+    }
+
+    .instructions-card ul {
+      margin-left: 20px;
+    }
+
+    .shortcut {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Anti-Paste Defense Test Lab</h1>
+      <p class="subtitle">Simulates real test proctoring, coding exams, and website paste restrictions</p>
+    </header>
+
+    <!-- Chrome file:// URL Alert Tip -->
+    <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; font-size: 12.5px; color: #fde68a; display: flex; align-items: center; gap: 8px;">
+      <span>💡</span>
+      <span><strong>Testing on a local file?</strong> Make sure <em>"Allow access to file URLs"</em> is enabled for SuperPaste in <code>chrome://extensions/</code>, or open this page by clicking <strong>"Open Interactive Test Lab"</strong> in the extension popup!</span>
+    </div>
+
+    <!-- Clipboard Helper -->
+    <div class="clipboard-bar">
+      <div class="clipboard-bar-text" style="display: flex; align-items: center; gap: 10px; flex-grow: 1; margin-right: 15px;">
+        <span style="white-space: nowrap;"><strong>Payload:</strong></span>
+        <code id="samplePayloadCode" style="background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: #38bdf8; padding: 8px 12px; font-family: monospace; font-size: 13px; width: 100%; display: block;">console.log("SuperPaste Bypassed!");</code>
+      </div>
+      <button class="copy-btn" id="btnCopySample" style="white-space: nowrap;">
+        📋 Copy to Clipboard
+      </button>
+    </div>
+
+    <!-- Test Traps Grid -->
+    <div class="grid">
+      <!-- Trap 1: preventDefault() -->
+      <div class="test-card">
+        <div class="card-top">
+          <h2 class="card-title">1. Event Listener Blocker</h2>
+          <span class="pill pill-danger">preventDefault()</span>
+        </div>
+        <p class="card-desc">Site uses <code>addEventListener('paste', e => e.preventDefault())</code> to reject paste events.</p>
+        <input type="text" id="trapPreventDefault" placeholder="Try standard Ctrl+V or Alt+V here..." />
+        <div class="stat-row">
+          <span>Interception Attempts:</span>
+          <span id="counterPreventDefault" class="counter-badge zero">0 blocked</span>
+        </div>
+      </div>
+
+      <!-- Trap 2: Inline onpaste="return false" -->
+      <div class="test-card">
+        <div class="card-top">
+          <h2 class="card-title">2. Inline HTML onpaste Trap</h2>
+          <span class="pill pill-danger">onpaste="return false"</span>
+        </div>
+        <p class="card-desc">Hardcoded <code>onpaste="return false;"</code> in the HTML markup directly.</p>
+        <input type="text" id="trapInline" onpaste="return false;" placeholder="Inline paste is forbidden..." />
+        <div class="stat-row">
+          <span>Protection:</span>
+          <span style="color: #94a3b8;">HTMLElement.prototype.onpaste Hooked</span>
+        </div>
+      </div>
+
+      <!-- Trap 3: Test Proctor Flagging Sensor -->
+      <div class="test-card">
+        <div class="card-top">
+          <h2 class="card-title">3. Proctoring Paste Detector</h2>
+          <span class="pill pill-warning">Telemetry Flagging</span>
+        </div>
+        <p class="card-desc">Monitors <code>paste</code> events and flags violations. Using <kbd class="shortcut">Alt+V</kbd> force-paste inserts text without firing paste events!</p>
+        <textarea id="trapTelemetry" placeholder="Normal Ctrl+V triggers an exam violation! Alt+V stays invisible."></textarea>
+        <div class="stat-row">
+          <span>Proctor Violations Recorded:</span>
+          <span id="counterViolations" class="counter-badge zero">0 violations</span>
+        </div>
+      </div>
+
+      <!-- Trap 4: Code Editor (contenteditable) -->
+      <div class="test-card">
+        <div class="card-top">
+          <h2 class="card-title">4. Code Editor (Rich Text)</h2>
+          <span class="pill pill-danger">Code Mirror / Monaco style</span>
+        </div>
+        <p class="card-desc">Simulates coding test IDEs using <code>contenteditable</code> with paste event traps.</p>
+        <div class="editable-box" id="trapEditor" contenteditable="true">function solution() {&#10;  // Paste solution here&#10;}</div>
+        <div class="stat-row">
+          <span>Editor Type:</span>
+          <span style="color: #94a3b8;">contenteditable="true"</span>
+        </div>
+      </div>
+
+      <!-- Trap 5: Right-Click Menu Disabled -->
+      <div class="test-card">
+        <div class="card-top">
+          <h2 class="card-title">5. Context Menu Lock</h2>
+          <span class="pill pill-danger">contextmenu disabled</span>
+        </div>
+        <p class="card-desc">Right-click is cancelled to stop users from opening the context menu.</p>
+        <textarea id="trapContextMenu" placeholder="Right-click here to see if context menu opens..."></textarea>
+      </div>
+
+      <!-- Trap 6: Selection & Copy Lock -->
+      <div class="test-card">
+        <div class="card-top">
+          <h2 class="card-title">6. Copy & Select Lock</h2>
+          <span class="pill pill-danger">user-select: none</span>
+        </div>
+        <p class="card-desc">Exam question text with selection disabled to prevent copying.</p>
+        <div class="locked-text-box" id="trapSelectText">
+          "Question 14: This question text is locked with user-select: none and oncopy preventDefault."
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Event Log -->
+    <div class="log-section">
+      <div class="log-header">
+        <span class="log-title">📡 Real-Time DOM Event Monitor</span>
+        <button class="btn-clear" id="btnClearLog">Clear Log</button>
+      </div>
+      <div class="log-box" id="logBox">
+        <div class="log-entry">Waiting for events...</div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions-card">
+      <h3>💡 How to Test SuperPaste:</h3>
+      <ul>
+        <li><strong>Standard Paste:</strong> With the extension active, normal <kbd class="shortcut">Ctrl + V</kbd> works even on blocked fields because <code>preventDefault()</code> is suppressed.</li>
+        <li><strong>Stealth Force Paste (<kbd class="shortcut">Alt + V</kbd>):</strong> Pressing <kbd class="shortcut">Alt + V</kbd> inserts text as direct input/keystrokes, bypassing Trap #3's Proctor Telemetry without triggering violations!</li>
+        <li><strong>Simulated Typing:</strong> Switch to <em>"Human Type"</em> or <em>"Fast Type"</em> in the extension popup and hit <kbd class="shortcut">Alt + V</kbd> to watch it type like a human.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const logBox = document.getElementById('logBox');
+    function log(msg, type = 'normal') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const time = new Date().toLocaleTimeString();
+      entry.textContent = `[${time}] ${msg}`;
+      logBox.prepend(entry);
+    }
+
+    document.getElementById('btnClearLog').addEventListener('click', () => {
+      logBox.innerHTML = '<div class="log-entry">Log cleared.</div>';
+    });
+
+    // Reliable copy helper that works across file://, http://, and https://
+    function copyToClipboard(text) {
+      let succeeded = false;
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '0';
+        ta.style.opacity = '0.001';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        succeeded = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch (err) {}
+
+      if (!succeeded && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {});
+        succeeded = true;
+      }
+      return succeeded;
+    }
+
+    const copyBtn = document.getElementById('btnCopySample');
+    const payloadCode = document.getElementById('samplePayloadCode');
+
+    copyBtn.addEventListener('click', () => {
+      const text = payloadCode ? payloadCode.textContent : 'console.log("SuperPaste Bypassed!");';
+      copyToClipboard(text);
+      copyBtn.textContent = '✅ Copied!';
+      copyBtn.style.backgroundColor = '#10b981';
+      log(`Copied payload: "${text}"`, 'success');
+      setTimeout(() => {
+        copyBtn.textContent = '📋 Copy to Clipboard';
+        copyBtn.style.backgroundColor = '';
+      }, 1500);
+    });
+
+    // Trap 1: preventDefault()
+    let preventDefaultBlocked = 0;
+    const trap1 = document.getElementById('trapPreventDefault');
+    const count1 = document.getElementById('counterPreventDefault');
+    trap1.addEventListener('paste', (e) => {
+      e.preventDefault();
+      preventDefaultBlocked++;
+      count1.textContent = `${preventDefaultBlocked} blocked`;
+      count1.classList.remove('zero');
+      log('Trap 1: Page attempted e.preventDefault() on paste', 'blocked');
+    });
+    trap1.addEventListener('input', () => {
+      log(`Trap 1: Content updated -> "${trap1.value}"`, 'success');
+    });
+
+    // Trap 3: Proctor Telemetry
+    let violations = 0;
+    const trap3 = document.getElementById('trapTelemetry');
+    const count3 = document.getElementById('counterViolations');
+    trap3.addEventListener('paste', () => {
+      violations++;
+      count3.textContent = `🚨 ${violations} VIOLATION(S) DETECTED`;
+      count3.classList.remove('zero');
+      log(`Trap 3: 🚨 PROCTOR VIOLATION! Native 'paste' event fired (#${violations})`, 'blocked');
+    });
+    trap3.addEventListener('input', (e) => {
+      log(`Trap 3: Valid input received (${trap3.value.length} chars)`, 'success');
+    });
+
+    // Trap 4: Editor paste blocker
+    const trap4 = document.getElementById('trapEditor');
+    trap4.addEventListener('paste', (e) => {
+      e.preventDefault();
+      log('Trap 4: Editor prevented paste via e.preventDefault()', 'blocked');
+    });
+
+    // Trap 5: Context Menu Blocker
+    const trap5 = document.getElementById('trapContextMenu');
+    trap5.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      log('Trap 5: Site called e.preventDefault() on contextmenu', 'blocked');
+    });
+
+    // Trap 6: Copy blocker
+    const trap6 = document.getElementById('trapSelectText');
+    trap6.addEventListener('copy', (e) => {
+      e.preventDefault();
+      log('Trap 6: Site tried to block copy on question text', 'blocked');
+    });
+  </script>
+</body>
+</html>

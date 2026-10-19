@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuperPaste</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-wrapper">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            <path d="m13 11-4 4"></path>
+            <path d="m9 11 4 4"></path>
+          </svg>
+          <span class="pulse-dot"></span>
+        </div>
+        <div class="brand-text">
+          <h1>SuperPaste</h1>
+          <span class="brand-sub">Bypass Anti-Paste Protections</span>
+        </div>
+      </div>
+      <div class="status-badge" id="statusBadge">
+        <span class="badge-dot"></span>
+        <span class="badge-text" id="statusBadgeText">ACTIVE</span>
+      </div>
+    </header>
+
+    <!-- Main Action Button -->
+    <section class="action-section">
+      <button id="btnForcePaste" class="btn-primary" title="Click or press Alt+V on page">
+        <div class="btn-content">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span class="btn-label">Force Paste Now</span>
+        </div>
+        <kbd class="shortcut-pill">Alt + V</kbd>
+      </button>
+    </section>
+
+    <!-- Clipboard Preview Area -->
+    <section class="clipboard-preview-card">
+      <div class="card-header">
+        <span class="card-title">Clipboard Ready</span>
+        <button id="btnRefreshClip" class="btn-ghost-icon" title="Refresh clipboard preview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="clip-content-box">
+        <p id="clipPreviewText" class="clip-text">Fetching clipboard...</p>
+      </div>
+    </section>
+
+    <!-- Paste Mode Selection -->
+    <section class="setting-group">
+      <label class="group-label">Paste Delivery Method</label>
+      <div class="mode-selector">
+        <label class="mode-pill">
+          <input type="radio" name="pasteMode" value="instant" id="modeInstant" checked>
+          <div class="mode-card">
+            <span class="mode-name">⚡ Instant</span>
+            <span class="mode-desc">Direct DOM injection</span>
+          </div>
+        </label>
+        <label class="mode-pill">
+          <input type="radio" name="pasteMode" value="fast_type" id="modeFastType">
+          <div class="mode-card">
+            <span class="mode-name">🚀 Fast Type</span>
+            <span class="mode-desc">Rapid keystrokes</span>
+          </div>
+        </label>
+        <label class="mode-pill">
+          <input type="radio" name="pasteMode" value="natural_type" id="modeNaturalType">
+          <div class="mode-card">
+            <span class="mode-name">👤 Human Type</span>
+            <span class="mode-desc">Simulated cadence</span>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- Feature Toggles -->
+    <section class="toggles-card">
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-name">Global Bypass</span>
+          <span class="toggle-desc">Master switch for all overrides</span>
+        </div>
+        <input type="checkbox" id="chkEnabled" class="switch-input" checked>
+        <span class="switch-slider"></span>
+      </label>
+
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-name">Block Paste Interceptors</span>
+          <span class="toggle-desc">Neutralize preventDefault & onpaste traps</span>
+        </div>
+        <input type="checkbox" id="chkUnblockPaste" class="switch-input" checked>
+        <span class="switch-slider"></span>
+      </label>
+
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-name">Unlock Right-Click Menu</span>
+          <span class="toggle-desc">Re-enable right click context menu</span>
+        </div>
+        <input type="checkbox" id="chkUnblockContextMenu" class="switch-input" checked>
+        <span class="switch-slider"></span>
+      </label>
+
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-name">Unlock Text Selection</span>
+          <span class="toggle-desc">Remove user-select: none locks</span>
+        </div>
+        <input type="checkbox" id="chkUnblockSelection" class="switch-input" checked>
+        <span class="switch-slider"></span>
+      </label>
+
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-name">HUD Notification</span>
+          <span class="toggle-desc">Show subtle confirmation toast on page</span>
+        </div>
+        <input type="checkbox" id="chkShowNotifications" class="switch-input" checked>
+        <span class="switch-slider"></span>
+      </label>
+    </section>
+
+    <!-- Footer Links -->
+    <footer class="footer">
+      <button id="btnOpenTestLab" class="btn-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
+        Open Interactive Test Lab
+      </button>
+      <span class="version-tag">v1.0.0</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

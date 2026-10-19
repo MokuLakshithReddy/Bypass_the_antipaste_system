@@ -1,0 +1,66 @@
+{
+  "manifest_version": 3,
+  "name": "SuperPaste - Anti-Paste Bypass & Force Paste",
+  "version": "1.0.0",
+  "description": "Bypasses anti-paste restrictions in exam and test systems. Force-paste clipboard text safely and simulate human typing.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "clipboardRead",
+    "scripting",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "SuperPaste Settings"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["injected.js"],
+      "world": "MAIN",
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "world": "ISOLATED",
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "commands": {
+    "force-paste": {
+      "suggested_key": {
+        "default": "Alt+V",
+        "mac": "Alt+V"
+      },
+      "description": "Force paste clipboard content into focused input"
+    },
+    "toggle-unblock": {
+      "suggested_key": {
+        "default": "Alt+Shift+U",
+        "mac": "Alt+Shift+U"
+      },
+      "description": "Toggle anti-paste bypass on current page"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
